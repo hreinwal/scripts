@@ -37,7 +37,7 @@
 ####################################################
 
 #configFile=/some/path/to/s2f.config
-configFile=$(find $(dirname $(realpath $0)) -name s2f4insects_PE_150bp.config)
+configFile=$(find $(dirname $(realpath $0)) -name s2f4plants_SR_50bp.config)
 
 ####################################################
 
@@ -71,7 +71,6 @@ SECONDS=0
 printf "`date` - START Seq2Fun Analysis pipeline \n" >> runtime.log
 
 
-
 ### fastp filtering and data QC (FastQC, FastQ-Screen) ### ---------------------
 printf "\n#### fastp, fastQscreen, fastQC ####" 2>&1 | tee -a runtime.log
 echo "
@@ -88,7 +87,7 @@ else
 	echo "readType parameter not defined in config file! Must be one of 'SR' or 'PE'!\n" 2>&1 | tee -a runtime.log
 fi
 
-## Run multiQC ##
+### Run multiQC ### ------------------------------------------------------------
 printf "\n#### multiQC ####" 2>&1 | tee -a runtime.log
 { time bash $ScriptPATH/multiQC.sh 2>&1 | tee -a run.stout ; } 2>> runtime.log
 echo "
@@ -96,12 +95,17 @@ echo "
 " 2>&1 | tee -a run.stout
 
 
-
 ### Seq2Fun ### ----------------------------------------------------------------
 printf "\n#### Seq2Fun ####" 2>&1 | tee -a runtime.log
 { time bash $ScriptPATH/seq2fun.sh 2>&1 | tee -a run.stout ; } 2>> runtime.log
 
+
+
 ### DGEA (DESeq2) & GSEA/ORA ### -----------------------------------------------
+printf "\n#### DGEA 4 S2F output in R ####" 2>&1 | tee -a runtime.log
+source activate Renv
+{ time Rscript $ScriptPATH/DESeq2_pairwise.4S2F.R --verbose 2>&1 | tee -a run.stout ; } 2>> runtime.log
+
 
 
 

@@ -34,7 +34,7 @@ for FQ in $(ls *.fastq.gz); do
 		--qualified_quality_phred $QPh \
 		--n_base_limit $Nlim \
 		--length_required $RLN
-	rm -fv fastp.html && mv -fv fastp.json $out/${FQ/.fastq.gz/.json}
+	rm -fv fastp.html && mv -fv fastp.json $out/${FQ/.fastq.gz/.fastp.json}
 done
 # to deactivate quality filter use -Q parameter!
 # https://github.com/OpenGene/fastp#output-splitting 

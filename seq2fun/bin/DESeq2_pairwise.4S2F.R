@@ -141,7 +141,7 @@ countMtxMerge = function(cmtx.ls){
 }
 
 cmtx.ls = list()
-tmp = list.files(pattern = "S2fid_abundance_table_all_samples_submit_2_expressanalyst")
+tmp = list.files(pattern = "S2fid_abundance_table_all_samples_submit_2_expressanalyst", recursive=T)
 for(i in tmp){ cmtx.ls[[sub("[Cc]ount[Mm]atrix","",i)]] <- import.s2fMtx(i) }
 if(length(cmtx.ls) == 1){
   count.matrix = cmtx.ls[[1]]
@@ -237,11 +237,16 @@ count.matrix.cl = relevance.filter(count.matrix, id.ls, minCPM=1)
 
 
 ## The following lines can be used to check your count distr
+pdf("s2fIDcount_distr.pdf", height = 9, width = 9)
+par(mfrow = c(2,2))
+# raw counts
 hist(as.matrix(count.matrix), breaks = 100, ylim = c(0,500))
 hist(as.matrix(count.matrix.cl), breaks = 100, ylim = c(0,500))
-
+# log10 transformed counts
 hist(as.matrix(log10(count.matrix+1)), breaks = 100, ylim = c(0,3000))
 hist(as.matrix(log10(count.matrix.cl+1)), breaks = 100, ylim = c(0,3000))
+dev.off()
+
 ##############################
 
 
@@ -633,7 +638,7 @@ gg = multiCorPlot(normMtx$ntd, label = "log2(norm.counts)")
 while (!is.null(dev.list()))  dev.off()
 png(filename = paste0("Plots/DataQC/",substance,"_Correlation_log2.png"),
     width = 7.33*w, height = 7.6*h, units = "cm", bg = "white", 
-    pointsize = .5, res = 500)
+    pointsize = 1, res = 500)
 print(ggpubr::ggarrange(plotlist = gg, ncol = w, nrow = h, 
                         labels = LETTERS[1:length(gg)]))
 dev.off()
@@ -642,7 +647,7 @@ gg = multiCorPlot(normMtx$nrl.bl, label = "rlog(norm.counts)")
 while (!is.null(dev.list()))  dev.off()
 png(filename = paste0("Plots/DataQC/",substance,"_Correlation_rlog.png"),
     width = 7.33*w, height = 7.6*h, units = "cm", bg = "white", 
-    pointsize = .5, res = 500)
+    pointsize = 1, res = 500)
 print(ggpubr::ggarrange(plotlist = gg, ncol = w, nrow = h, 
                         labels = LETTERS[1:length(gg)]))
 dev.off()
@@ -1062,7 +1067,10 @@ mod_res <- function(res.ls){
   return(RES)
 }
 
-message("\nStart shiny DEG Correlation & Venn plotting ...")
+
+## Run the next lines only when more than one condition is present!!!! ##
+if(length(condition) > 2){
+  message("\nStart shiny DEG Correlation & Venn plotting ...")
 
 gg <- list() #to store plots in
 RES = mod_res(res.ls)
@@ -1132,11 +1140,12 @@ for(k in names(RES)[-length(RES)]){
 while (!is.null(dev.list()))  dev.off()
 pdf(file = paste0("Plots/",substance,"_DEG_CorrVenn.pdf"),
     width = 12, height = 6*(length(res.ls)-1) )
-print(ggpubr::ggarrange(plotlist = gg, ncol = 2, nrow = length(res.ls)-1))
+print( ggpubr::ggarrange(plotlist = gg, ncol = 2, nrow = length(res.ls)-1) )
 dev.off()
 message("Done!\n")
 rm(RES,RESlfs,tmp,gg,k,n.x,n.y,LFcut.x,LFcut.y,X,Y,s.x,s.y)
 gc()
+}
 ######################################
 
 ### Multi Venn Plot ### --------------------------------------------------------
@@ -1162,7 +1171,8 @@ myVenn = function(deg, title = "", shape = "ellipse", ...) {
   }
 }
 
-if(length(condition)-1 > 6){
+if(length(condition) > 2){
+  if(length(condition)-1 > 6){
   warning("Dataset contains ",length(condition)-1," treatment conditions.\n",
           "Multi venn diagrams can only be drawn for a maximum of 6 treatments.\nSkipping multi venn plotting.")
 } else {
@@ -1196,6 +1206,7 @@ if(length(condition)-1 > 6){
   rm(i,n, gg, deg)
 }
 message("Done!\n")
+}
 #######################
 
 ### Session Information & save Rdata  ### --------------------------------------
